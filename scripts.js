@@ -10,7 +10,12 @@ $(document).ready(function () {
     });
 
     $('.btn-start').click(function () {
-        find_path(block_start(), block_end());
+        paths = find_path(block_start(), block_end());
+        paths.forEach(function (path, key) {
+            setTimeout(function() {
+                $('.blocks-row').eq(path.x).find('.block').eq(path.y).addClass('block-walked');
+            }, 100*(key+1));
+        });
     });
 
     generate_block();
@@ -23,6 +28,7 @@ function block(x, y, type) {
         'f': 0,
         'g': 0,
         'h': 0,
+        'parent': null,
         'type': type,
     }
 }
@@ -111,7 +117,20 @@ function find_path(start, end) {
         });
 
         if (current == end) {
+            var parents = [current];
+            while (current.parent) {
+                parents.push(current.parent);
+                current = current.parent;
+            }
+
+            parents.reverse();
+
+            parents.forEach(function (parent) {
+                console.log('Parent: ' + parent.x + ' - ' + parent.y);
+            });
+
             alert('success !!');
+            return parents
         }
 
         openset = removeItems(openset, current);
@@ -127,9 +146,9 @@ function find_path(start, end) {
             var g_temp = current.g + 1;
 
             if (openset.indexOf(neighbour) < 0 || g_temp < neighbour.g) {
-                // TODO: came_from[neighbour] := current
                 // TODO: CAL neighbour.h
 
+                neighbour.parent = current;
                 neighbour.g = g_temp;
                 neighbour.f = g_temp + neighbour.h;
 
@@ -140,4 +159,7 @@ function find_path(start, end) {
 
         });
     }
+
+    // NOT HAVE PATH
+    return [];
 }
