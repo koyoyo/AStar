@@ -11,10 +11,13 @@ $(document).ready(function () {
 
     $('.btn-start').click(function () {
         paths = find_path(block_start(), block_end());
+        if (paths.length == 0) {
+            alert('No path !!');
+        }
         paths.forEach(function (path, key) {
             setTimeout(function() {
                 $('.blocks-row').eq(path.x).find('.block').eq(path.y).addClass('block-walked');
-            }, 100*(key+1));
+            }, 50*(key+1));
         });
     });
 
@@ -61,7 +64,7 @@ function generate_block() {
             } else if (i==GRID_ROW-1 && j==GRID_COLUMN-1) {
                 grid[i][j] = block(i, j, PATH_BLOCK);
                 html_tmp += '<div class="block block-path block-end"></div>';
-            } else if (random < 7) {
+            } else if (random > 3) {
                 grid[i][j] = block(i, j, PATH_BLOCK);
                 html_tmp += '<div class="block block-path"></div>';
             } else {
@@ -99,6 +102,12 @@ function get_block_neighbours(block) {
     return neighbours;
 }
 
+function manhattan_distance(block_from, block_to) {
+    dx = Math.abs(block_from.x, block_to.x);
+    dy = Math.abs(block_from.y, block_to.y);
+    return (dx+dy);
+}
+
 function find_path(start, end) {
     var closedset = [];
     var openset = [];
@@ -129,7 +138,6 @@ function find_path(start, end) {
                 console.log('Parent: ' + parent.x + ' - ' + parent.y);
             });
 
-            alert('success !!');
             return parents
         }
 
@@ -147,6 +155,7 @@ function find_path(start, end) {
 
             if (openset.indexOf(neighbour) < 0 || g_temp < neighbour.g) {
                 // TODO: CAL neighbour.h
+                neighbour.h = manhattan_distance(neighbour, end);
 
                 neighbour.parent = current;
                 neighbour.g = g_temp;
