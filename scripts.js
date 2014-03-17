@@ -1,7 +1,7 @@
 var WALL_BLOCK = 1;
 var PATH_BLOCK = 0;
-var GRID_COLUMN = 30;
-var GRID_ROW = 20;
+var GRID_COLUMN = 29;
+var GRID_ROW = 19;
 var grid = [];
 
 $(document).ready(function () {
@@ -33,6 +33,7 @@ function block(x, y, type) {
         'h': 0,
         'parent': null,
         'type': type,
+        'is_map_gen_visited': false,
     }
 }
 
@@ -48,27 +49,64 @@ function block_end() {
     return grid[GRID_ROW-1][GRID_COLUMN-1];
 }
 
+function generate_map_recursive_backtracker() {
+    var stack = [];
+    var current = block_end();
+    current.type = PATH_BLOCK;
+
+    var visited = 1;
+    stack.push(current);
+
+    while (visited < Math.ceil(GRID_COLUMN/2)*Math.ceil(GRID_ROW/2)) {
+        current.is_map_gen_visited = true;
+
+        var neighbours = get_unvisited_block_neighbours(current);
+
+        if (neighbours.length > 0) {
+            var random = Math.floor(Math.random() * neighbours.length);
+            var selected_neighbour = neighbours[random];
+
+            stack.push(selected_neighbour);
+
+            // REMOVE THE WALL
+            var diff_x = Math.abs(selected_neighbour.x + current.x);
+            var diff_y = Math.abs(selected_neighbour.y + current.y);
+
+            wall_block = get_block(diff_x/2, diff_y/2);
+            wall_block.type = PATH_BLOCK;
+
+            selected_neighbour.type = PATH_BLOCK;
+
+            current = selected_neighbour;
+            visited += 1;
+        } else {
+            current = stack.pop();
+        }
+    }
+}
+
 function generate_block() {
     var html = '';
     for (var i=0; i<GRID_ROW; i++) {
-        var html_tmp = '';
         grid[i] = [];
+        for (var j=0; j<GRID_COLUMN; j++) {
+            grid[i][j] = block(i, j, WALL_BLOCK);
+        }
+    }
+
+    generate_map_recursive_backtracker();
+
+    for (var i=0; i<GRID_ROW; i++) {
+        var html_tmp = '';
 
         for (var j=0; j<GRID_COLUMN; j++) {
-
-            var random = Math.random() * 10;
-
             if (i==0 && j==0) {
-                grid[i][j] = block(i, j, PATH_BLOCK);
                 html_tmp += '<div class="block block-path block-start"></div>';
             } else if (i==GRID_ROW-1 && j==GRID_COLUMN-1) {
-                grid[i][j] = block(i, j, PATH_BLOCK);
                 html_tmp += '<div class="block block-path block-end"></div>';
-            } else if (random > 3) {
-                grid[i][j] = block(i, j, PATH_BLOCK);
+            } else if (get_block(i, j).type == PATH_BLOCK) {
                 html_tmp += '<div class="block block-path"></div>';
             } else {
-                grid[i][j] = block(i, j, WALL_BLOCK);
                 html_tmp += '<div class="block block-wall"></div>';
             }
         }
@@ -98,6 +136,31 @@ function get_block_neighbours(block) {
     }
     if (grid[block.x] && grid[block.x][block.y+1]) {
         neighbours.push(grid[block.x][block.y+1]);
+    }
+    return neighbours;
+}
+
+function get_unvisited_block_neighbours(block) {
+    neighbours = []
+    if (grid[block.x-2] && grid[block.x-2][block.y]) {
+        if (!grid[block.x-2][block.y].is_map_gen_visited) {
+            neighbours.push(grid[block.x-2][block.y]);
+        }
+    }
+    if (grid[block.x+2] && grid[block.x+2][block.y]) {
+        if (!grid[block.x+2][block.y].is_map_gen_visited) {
+            neighbours.push(grid[block.x+2][block.y]);
+        }
+    }
+    if (grid[block.x] && grid[block.x][block.y-2]) {
+        if (!grid[block.x][block.y-2].is_map_gen_visited) {
+            neighbours.push(grid[block.x][block.y-2]);
+        }
+    }
+    if (grid[block.x] && grid[block.x][block.y+2]) {
+        if (!grid[block.x][block.y+2].is_map_gen_visited) {
+            neighbours.push(grid[block.x][block.y+2]);
+        }
     }
     return neighbours;
 }
