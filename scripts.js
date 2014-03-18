@@ -85,6 +85,64 @@ function generate_map_recursive_backtracker() {
     }
 }
 
+function generate_maze_prim_algorithm() {
+    var walllist = [];
+    var initial = block_end();
+    initial.type = PATH_BLOCK;
+
+    walllist.push(initial);
+
+    while (walllist.length > 0) {
+        var random = Math.floor(Math.random() * walllist.length);
+        var current = walllist[random];
+
+        var neighbours = get_block_neighbours(current, 2);
+
+        var path_neighbours = [];
+        var wall_neighbours = [];
+        neighbours.forEach(function (neighbour) {
+            if (neighbour.type == PATH_BLOCK)
+                path_neighbours.push(neighbour);
+            else
+                wall_neighbours.push(neighbour);
+        });
+
+        if (path_neighbours.length > 0) {
+            var random = Math.floor(Math.random() * path_neighbours.length);
+            var selected = path_neighbours[random];
+
+            // CREATE PATH
+            var diff_x = Math.abs(selected.x + current.x);
+            var diff_y = Math.abs(selected.y + current.y);
+
+            wall_block = get_block(diff_x/2, diff_y/2);
+            wall_block.type = PATH_BLOCK;
+            current.type = PATH_BLOCK;
+            selected.type = PATH_BLOCK;
+
+            var selected_neighbours = get_block_neighbours(selected, 2);
+
+            selected_neighbours.forEach(function (neighbour) {
+                if (neighbour.type == WALL_BLOCK && walllist.indexOf(neighbour) < 0) {
+                    walllist.push(neighbour);
+                }
+            });
+
+            if (walllist.indexOf(current) >= 0)
+                walllist.splice(walllist.indexOf(current), 1);
+
+            if (walllist.indexOf(selected) >= 0)
+                walllist.splice(walllist.indexOf(selected), 1);
+        }
+
+        wall_neighbours.forEach(function (neighbour) {
+            if (neighbour.type == WALL_BLOCK && walllist.indexOf(neighbour) < 0) {
+                walllist.push(neighbour);
+            }
+        });
+    }
+}
+
 function generate_block() {
     var html = '';
     for (var i=0; i<GRID_ROW; i++) {
@@ -94,7 +152,8 @@ function generate_block() {
         }
     }
 
-    generate_map_recursive_backtracker();
+    // generate_map_recursive_backtracker();
+    generate_maze_prim_algorithm();
 
     for (var i=0; i<GRID_ROW; i++) {
         var html_tmp = '';
@@ -123,19 +182,19 @@ function removeItems(array, item) {
     return array;
 }
 
-function get_block_neighbours(block) {
+function get_block_neighbours(block, distance) {
     neighbours = []
-    if (grid[block.x-1] && grid[block.x-1][block.y]) {
-        neighbours.push(grid[block.x-1][block.y]);
+    if (grid[block.x-distance] && grid[block.x-distance][block.y]) {
+        neighbours.push(grid[block.x-distance][block.y]);
     }
-    if (grid[block.x+1] && grid[block.x+1][block.y]) {
-        neighbours.push(grid[block.x+1][block.y]);
+    if (grid[block.x+distance] && grid[block.x+distance][block.y]) {
+        neighbours.push(grid[block.x+distance][block.y]);
     }
-    if (grid[block.x] && grid[block.x][block.y-1]) {
-        neighbours.push(grid[block.x][block.y-1]);
+    if (grid[block.x] && grid[block.x][block.y-distance]) {
+        neighbours.push(grid[block.x][block.y-distance]);
     }
-    if (grid[block.x] && grid[block.x][block.y+1]) {
-        neighbours.push(grid[block.x][block.y+1]);
+    if (grid[block.x] && grid[block.x][block.y+distance]) {
+        neighbours.push(grid[block.x][block.y+distance]);
     }
     return neighbours;
 }
@@ -207,7 +266,7 @@ function find_path(start, end) {
         openset = removeItems(openset, current);
         closedset.push(current);
 
-        var neighbours = get_block_neighbours(current);
+        var neighbours = get_block_neighbours(current, 1);
         neighbours.forEach(function (neighbour) {
             if (closedset.indexOf(neighbour) >= 0 || neighbour.type == WALL_BLOCK) {
                 return false;
