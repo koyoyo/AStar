@@ -152,8 +152,10 @@ function generate_block() {
         }
     }
 
+    var generate_maze_method = $('.maze-generate-algorithm').val()
+    window[generate_maze_method]();
     // generate_map_recursive_backtracker();
-    generate_maze_prim_algorithm();
+    // generate_maze_prim_algorithm();
 
     for (var i=0; i<GRID_ROW; i++) {
         var html_tmp = '';
