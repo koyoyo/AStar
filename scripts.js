@@ -161,8 +161,6 @@ function generate_maze_kruskal_algorithm() {
         var wall = walllist[index];
         walllist.splice(index , 1);
 
-        // console.log('wall ', wall)
-
         // get couple wall
         if (wall.x%2 == 1) {
             var first = get_block(wall.x-1, wall.y);
@@ -176,24 +174,14 @@ function generate_maze_kruskal_algorithm() {
         for (var set_index=0; set_index<sets.length; set_index++) {
             if (sets[set_index].indexOf(first) >= 0 ) {
                 first_index = set_index;
-                // sets[set_index].forEach(function (x) {
-                //     console.log(x);
-                // })
-                // console.log(first_index, 'end if first');
             }
 
             if (sets[set_index].indexOf(second) >= 0 ) {
                 second_index = set_index;
-                // sets[set_index].forEach(function (x) {
-                //     console.log(x);
-                // })
-                // console.log(second_index, 'end if second');
             }
         }
 
-        console.log('first_index: ', first_index, ' second_index:', second_index)
         if (first_index >= 0 && second_index >= 0 && first_index != second_index) {
-            // console.log('-------------   In -------------')
             first.type = PATH_BLOCK;
             second.type = PATH_BLOCK;
             wall.type = PATH_BLOCK;
@@ -203,17 +191,6 @@ function generate_maze_kruskal_algorithm() {
             });
             sets.splice(second_index, 1)
         }
-
-        // for (var xx=0; xx<GRID_ROW; xx++) {
-        //     var a = ''
-        //     for (var yy=0; yy<GRID_COLUMN; yy++) {
-        //         if (get_block(xx, yy).type == 1)
-        //             a+='1'
-        //         else
-        //             a+='0'
-        //     }
-        //     console.log(a)
-        // }
     }
 }
 
