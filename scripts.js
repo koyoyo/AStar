@@ -143,6 +143,80 @@ function generate_maze_prim_algorithm() {
     }
 }
 
+function generate_maze_kruskal_algorithm() {
+    var sets = [];
+    var walllist = [];
+    for (var y=0; y<GRID_ROW; y++) {
+        for (var x=0; x<GRID_COLUMN; x++) {
+            if ((y%2 == 1 && x%2 == 0) || (y%2 == 0 && x%2 == 1)) {
+                walllist.push(get_block(y, x));
+            } else if (y%2==0 && x%2==0) {
+                sets.push( [get_block(y, x)] );
+            }
+        }
+    }
+
+    while (walllist.length > 1) {
+        var index = Math.floor(Math.random() * walllist.length);
+        var wall = walllist[index];
+        walllist.splice(index , 1);
+
+        // console.log('wall ', wall)
+
+        // get couple wall
+        if (wall.x%2 == 1) {
+            var first = get_block(wall.x-1, wall.y);
+            var second = get_block(wall.x+1, wall.y);
+        } else if (wall.y%2 == 1) {
+            var first = get_block(wall.x, wall.y-1);
+            var second = get_block(wall.x, wall.y+1);
+        }
+
+        var first_index = -999, second_index = -999;
+        for (var set_index=0; set_index<sets.length; set_index++) {
+            if (sets[set_index].indexOf(first) >= 0 ) {
+                first_index = set_index;
+                // sets[set_index].forEach(function (x) {
+                //     console.log(x);
+                // })
+                // console.log(first_index, 'end if first');
+            }
+
+            if (sets[set_index].indexOf(second) >= 0 ) {
+                second_index = set_index;
+                // sets[set_index].forEach(function (x) {
+                //     console.log(x);
+                // })
+                // console.log(second_index, 'end if second');
+            }
+        }
+
+        console.log('first_index: ', first_index, ' second_index:', second_index)
+        if (first_index >= 0 && second_index >= 0 && first_index != second_index) {
+            // console.log('-------------   In -------------')
+            first.type = PATH_BLOCK;
+            second.type = PATH_BLOCK;
+            wall.type = PATH_BLOCK;
+
+            sets[second_index].forEach(function (item_in_second) {
+                sets[first_index].push(item_in_second);
+            });
+            sets.splice(second_index, 1)
+        }
+
+        // for (var xx=0; xx<GRID_ROW; xx++) {
+        //     var a = ''
+        //     for (var yy=0; yy<GRID_COLUMN; yy++) {
+        //         if (get_block(xx, yy).type == 1)
+        //             a+='1'
+        //         else
+        //             a+='0'
+        //     }
+        //     console.log(a)
+        // }
+    }
+}
+
 function generate_block() {
     var html = '';
     for (var i=0; i<GRID_ROW; i++) {
