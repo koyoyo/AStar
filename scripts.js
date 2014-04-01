@@ -3,10 +3,13 @@ var PATH_BLOCK = 0;
 var GRID_COLUMN = 29;
 var GRID_ROW = 19;
 var grid = [];
+var current;
 
 $(document).ready(function () {
     $('.btn-random').click(function () {
+        stopAllTimeout();
         generate_block();
+        resetBlocks();
     });
 
     $('.btn-start').click(function () {
@@ -22,8 +25,48 @@ $(document).ready(function () {
     });
 
     generate_block();
+    current = block_end();
 });
 
+$(document).keydown(function (e) {
+    e = e || window.event;
+
+    if (e.keyCode == '38') {
+        // UP
+        moveBlock(-1, 0);
+    } else if (e.keyCode == '37') {
+        // LEFT
+        moveBlock(0, -1);
+    } else if (e.keyCode == '39') {
+        // RIGHT
+        moveBlock(0, 1);
+    } else if (e.keyCode == '40') {
+        // DOWN
+        moveBlock(1, 0);
+    }
+});
+
+// GAME
+function moveBlock(x, y) {
+    to_x = current.x + x;
+    to_y = current.y + y;
+
+    var is_exists = block_exists(to_x, to_y);
+
+    if (is_exists) {
+        var to_block = get_block(to_x, to_y);
+
+        if (to_block.type == PATH_BLOCK) {
+            $('.blocks-row').eq(to_block.x).find('.block').eq(to_block.y).addClass('block-end');
+            $('.blocks-row').eq(current.x).find('.block').eq(current.y).removeClass('block-end');
+
+            current = to_block;
+        }
+    }
+}
+
+
+// BASE
 function block(x, y, type) {
     return {
         'x': x,
@@ -35,6 +78,15 @@ function block(x, y, type) {
         'type': type,
         'is_map_gen_visited': false,
     }
+}
+
+function block_exists(x, y) {
+    if (x in grid) {
+        if (y in grid[x]) {
+            return true;
+        }
+    }
+    return false;
 }
 
 function get_block(x, y) {
@@ -247,10 +299,7 @@ function generate_block() {
         }
     }
 
-    var generate_maze_method = $('.maze-generate-algorithm').val()
-    window[generate_maze_method]();
-    // generate_map_recursive_backtracker();
-    // generate_maze_prim_algorithm();
+    generate_maze_with_loop();
 
     for (var i=0; i<GRID_ROW; i++) {
         var html_tmp = '';
@@ -327,7 +376,7 @@ function manhattan_distance(block_from, block_to) {
     return (dx+dy);
 }
 
-function resetX() {
+function resetBlocks() {
     for (var i=0; i<GRID_ROW; i++) {
         for (var j=0; j<GRID_COLUMN; j++) {
             grid[i][j].f = 0;
@@ -338,8 +387,15 @@ function resetX() {
     }
 }
 
+function stopAllTimeout() {
+    var id = window.setTimeout(null,0);
+    while (id--) {
+        window.clearTimeout(id);
+    }
+}
+
 function find_path(start, end) {
-    resetX();
+    resetBlocks();
     var closedset = [];
     var openset = [];
 
@@ -365,9 +421,9 @@ function find_path(start, end) {
 
             parents.reverse();
 
-            parents.forEach(function (parent) {
-                console.log('Parent: ' + parent.x + ' - ' + parent.y);
-            });
+            // parents.forEach(function (parent) {
+            //     console.log('Parent: ' + parent.x + ' - ' + parent.y);
+            // });
 
             return parents
         }
