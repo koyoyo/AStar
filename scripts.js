@@ -194,6 +194,50 @@ function generate_maze_kruskal_algorithm() {
     }
 }
 
+function generate_maze_with_loop(density) {
+
+    var density = density || 25;
+
+    var walllist = [];
+    for (var y=0; y<GRID_ROW; y++) {
+        for (var x=0; x<GRID_COLUMN; x++) {
+            var block = get_block(y, x);
+            if ((y%2 == 1 && x%2 == 0) || (y%2 == 0 && x%2 == 1)) {
+                block.type = PATH_BLOCK;
+                walllist.push(block);
+            } else if (y%2==1 && x%2==1) {
+                block.type = WALL_BLOCK;
+            } else {
+                block.type = PATH_BLOCK;
+            }
+        }
+    }
+
+    for (var i=0; i<Math.floor(walllist.length*density/100); i++) {
+        var randomIndex = Math.floor(Math.random()*walllist.length);
+        var wall = walllist[randomIndex];
+
+        // get couple wall
+        if (wall.x%2 == 1) {
+            var first = get_block(wall.x-1, wall.y);
+            var second = get_block(wall.x+1, wall.y);
+        } else if (wall.y%2 == 1) {
+            var first = get_block(wall.x, wall.y-1);
+            var second = get_block(wall.x, wall.y+1);
+        }
+
+        if (first.x >=0 && second.x >=0) {
+            wall.type = WALL_BLOCK;
+            paths = find_path(first, second);
+        }
+        if (paths.length == 0) {
+            wall.type = PATH_BLOCK;
+        }
+
+        walllist.splice(randomIndex, 1);
+    }
+}
+
 function generate_block() {
     var html = '';
     for (var i=0; i<GRID_ROW; i++) {
@@ -283,7 +327,19 @@ function manhattan_distance(block_from, block_to) {
     return (dx+dy);
 }
 
+function resetX() {
+    for (var i=0; i<GRID_ROW; i++) {
+        for (var j=0; j<GRID_COLUMN; j++) {
+            grid[i][j].f = 0;
+            grid[i][j].g = 0;
+            grid[i][j].h = 0;
+            grid[i][j].parent = null;
+        }
+    }
+}
+
 function find_path(start, end) {
+    resetX();
     var closedset = [];
     var openset = [];
 
