@@ -4,6 +4,7 @@ var GRID_COLUMN = 29;
 var GRID_ROW = 19;
 var grid = [];
 var current;
+var aiCurrent;
 
 $(document).ready(function () {
     $('.btn-random').click(function () {
@@ -13,18 +14,27 @@ $(document).ready(function () {
     });
 
     $('.btn-start').click(function () {
-        paths = find_path(block_start(), block_end());
+        paths = find_path(aiCurrent, current);
         if (paths.length == 0) {
             alert('No path !!');
         }
+
+        var $beforePath, $currentPath;
         paths.forEach(function (path, key) {
             setTimeout(function() {
-                $('.blocks-row').eq(path.x).find('.block').eq(path.y).addClass('block-walked');
+                $currentPath = $('.blocks-row').eq(path.x).find('.block').eq(path.y);
+                $currentPath.addClass('block-start');
+                if ($beforePath != undefined) {
+                    $beforePath.removeClass('block-start');
+                }
+                $beforePath = $currentPath;
+
             }, 50*(key+1));
         });
     });
 
     generate_block();
+    aiCurrent = block_start();
     current = block_end();
 });
 
@@ -385,6 +395,7 @@ function resetBlocks() {
             grid[i][j].parent = null;
         }
     }
+    current = block_end();
 }
 
 function stopAllTimeout() {

@@ -55,14 +55,14 @@
     background-color: #eee;
 }
 
-.block.block-start {
-    background-color: #ffca95;
-    border-color: #ffca95;
-}
-
 .block.block-end {
     background-color: #008ed4;
     border-color: #008ed4;
+}
+
+.block.block-start {
+    background-color: #ffca95;
+    border-color: #ffca95;
 }
 
 .block.block-walked {
